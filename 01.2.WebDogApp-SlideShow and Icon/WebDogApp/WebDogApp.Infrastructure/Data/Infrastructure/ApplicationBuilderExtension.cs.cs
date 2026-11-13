@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
+using System.Threading.Tasks;
+using WebDogApp.Infrastructure.Data;
+using WebDogApp.Infrastructure.Data.Domain;
+
+public static class ApplicationBuilderExtension
+{
+    public static async Task<IApplicationBuilder> PrepareDatabase(this IApplicationBuilder app)
+    {
+        using var serviceScope = app.ApplicationServices.CreateScope();
+        var data = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        await SeedBreedsAsync(data);
+
+        return app;
+    }
+
+    private static async Task SeedBreedsAsync(ApplicationDbContext data)
+    {
+        if (data.Breeds.Any())
+        {
+            return;
+        }
+
+        data.Breeds.AddRange(new[]
+        {
+            new Breed { Name = "Husky" },
+            new Breed { Name = "Pinscher" },
+            new Breed { Name = "Cocer spaniol" },
+            new Breed { Name = "Dachshund" },
+            new Breed { Name = "Doberman" }
+        });
+
+        await data.SaveChangesAsync();
+    }
+}
+
